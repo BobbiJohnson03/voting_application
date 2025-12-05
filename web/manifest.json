@@ -1,0 +1,46 @@
+{
+    "name": "Secure Voting System",
+    "short_name": "VoteApp",
+    "start_url": ".",
+    "display": "standalone",
+    "background_color": "#1565C0",
+    "theme_color": "#1565C0",
+    "description": "University Secure Offline Voting System - Cast your vote securely from any device",
+    "orientation": "portrait-primary",
+    "prefer_related_applications": false,
+    "scope": ".",
+    "id": "vote_app_thesis",
+    "categories": ["productivity", "utilities"],
+    "icons": [
+        {
+            "src": "icons/Icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "icons/Icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        },
+        {
+            "src": "icons/Icon-maskable-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "maskable"
+        },
+        {
+            "src": "icons/Icon-maskable-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
+        }
+    ],
+    "shortcuts": [
+        {
+            "name": "Join Meeting",
+            "short_name": "Join",
+            "description": "Join a voting meeting",
+            "url": "./#/client/join"
+        }
+    ]
+}

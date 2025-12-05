@@ -1,0 +1,90 @@
+name: voting_application
+description: "Secure Offline Voting System - University Thesis Project"
+
+# Aplikacja prywatna – bez publikacji na pub.dev
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.9.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # ============ UI & UTILITIES ============
+  cupertino_icons: ^1.0.8
+  provider: ^6.1.1
+  flutter_animate: ^4.5.0
+  uuid: ^4.2.1
+  intl: ^0.18.1
+
+  # ============ DATABASE & STORAGE ============
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  path_provider: ^2.1.2
+  shared_preferences: ^2.2.0
+  json_annotation: ^4.9.0
+
+  # ============ SECURITY & CRYPTO ============
+  crypto: ^3.0.3
+  dart_jsonwebtoken: ^2.14.0
+  device_info_plus: ^9.0.0
+
+  # ============ QR CODES & SCANNER ============
+  qr_flutter: ^4.1.0
+  mobile_scanner: ^5.2.3
+
+  # ============ DEEP LINKING ============
+  app_links: ^6.3.2
+
+  # ============ NETWORK & HTTP ============
+  http: ^1.2.2
+  web_socket_channel: ^2.4.0
+
+  # ============ LOCAL SERVER ============
+  shelf: ^1.4.1
+  shelf_web_socket: ^1.0.4
+  shelf_router: ^1.1.4
+  shelf_static: ^1.1.0
+  mime: ^1.0.4
+
+  # ============ EXPORT & SHARING ============
+  share_plus: ^7.2.1
+  csv: ^5.0.2
+  pdf: ^3.10.7
+  # printing: ^5.13.0  # Tymczasowo wyłączone – konflikt z SDK 35
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^5.0.0
+
+  # Generatorzy / testy
+  build_runner: ^2.4.6
+  hive_generator: ^2.0.1
+  json_serializable: ^6.7.1
+  mockito: ^5.4.4
+
+flutter:
+  uses-material-design: true
+
+  # ============ ASSETS ============
+  assets:
+    - assets/images/
+    - assets/icons/
+    # Web build files for PWA hosting on mobile
+    # Copy build/web/* to assets/web/ before building APK
+    - assets/web/
+    - assets/web/assets/
+    - assets/web/assets/assets/
+    - assets/web/assets/fonts/
+    - assets/web/assets/packages/
+    - assets/web/assets/packages/cupertino_icons/
+    - assets/web/assets/packages/cupertino_icons/assets/
+    - assets/web/assets/shaders/
+    - assets/web/icons/
+    - assets/web/canvaskit/
+    - assets/web/canvaskit/chromium/
