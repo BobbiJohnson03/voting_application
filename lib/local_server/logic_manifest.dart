@@ -9,6 +9,32 @@ class LogicManifest {
 
   LogicManifest({required this.votings, required this.questions});
 
+  /// Get list of sessions for a meeting (for client refresh)
+  Future<Response> sessions(Request req) async {
+    final meetingId = req.requestedUri.queryParameters['meetingId']?.trim();
+    if (meetingId == null || meetingId.isEmpty) {
+      return jsonErr('Missing meetingId', status: 400);
+    }
+
+    final allVotings = await votings.forMeeting(meetingId);
+    
+    // Return all non-archived sessions
+    final visibleVotings = allVotings.where((v) => v.status.name != 'archived');
+    
+    return jsonOk({
+      'success': true,
+      'sessions': visibleVotings.map((v) => {
+        'id': v.id,
+        'title': v.title,
+        'status': v.status.name,
+        'type': v.type.name,
+        'canVote': v.canVote,
+        'endsAt': v.endsAt?.toIso8601String(),
+      }).toList(),
+    });
+  }
+
+  /// Get details of a single voting session
   Future<Response> manifest(Request req) async {
     final sessionId = req.requestedUri.queryParameters['sessionId']?.trim();
     if (sessionId == null || sessionId.isEmpty) {

@@ -131,4 +131,12 @@ class TicketRepository {
       await box.delete(ticket.id);
     }
   }
+
+  /// Get all tickets for a voting session
+  Future<List<Ticket>> forSession(String sessionId) async {
+    final box = await _open();
+    return box.values
+        .where((t) => t.sessionId == sessionId)
+        .toList(growable: false);
+  }
 }

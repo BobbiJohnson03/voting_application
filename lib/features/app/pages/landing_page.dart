@@ -112,6 +112,7 @@ class _LandingPageState extends State<LandingPage> {
                 meetingPassId: meetingPassId,
                 meetingTitle: meetingTitle ?? 'Meeting',
                 initialSessions: const [],
+                serverUrl: serverUrl, // Pass serverUrl to enable fetching!
               ),
             ),
           );

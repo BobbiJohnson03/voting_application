@@ -36,7 +36,11 @@ class AdminHostServer {
   late final LogicManifest lm;
   late final LogicAdmin la;
 
-  // Store repositories for verification endpoints
+  // Store repositories for verification and stats endpoints
+  late final MeetingRepository _meetings;
+  late final VotingRepository _votings;
+  late final TicketRepository _tickets;
+  late final MeetingPassRepository _meetingPasses;
   late final VoteRepository _votes;
   late final SigningKeyRepository _signingKeys;
   late final AuditLogRepository _auditLogs;
@@ -54,7 +58,11 @@ class AdminHostServer {
     broadcast = BroadcastManager();
     rateLimiter = RateLimiter();
 
-    // Store for verification endpoints
+    // Store for verification and stats endpoints
+    _meetings = meetings;
+    _votings = votings;
+    _tickets = tickets;
+    _meetingPasses = meetingPasses;
     _votes = votes;
     _signingKeys = signingKeys;
     _auditLogs = auditLogs;
@@ -96,6 +104,7 @@ class AdminHostServer {
     final router = Router()
       ..get('/health', (req) => _jsonResponse({'ok': true}))
       ..get('/manifest', lm.manifest)
+      ..get('/sessions', lm.sessions)
       ..post('/join', lt.joinMeeting)
       ..post('/ticket', lt.requestTicket)
       ..post('/vote', lv.submitVote)
@@ -103,6 +112,7 @@ class AdminHostServer {
       ..post('/admin/close', la.closeSession)
       ..get('/admin/verify-chain', _verifyHashChain)
       ..get('/admin/audit-logs', _getAuditLogs)
+      ..get('/admin/stats', _getStats)
       ..get('/ws', broadcast.handleWs)
       ..options('/<ignored|.*>', (req) => Response.ok(''));
 
@@ -309,5 +319,71 @@ class AdminHostServer {
       'chainErrors': chainErrors,
       'count': logs.length,
     });
+  }
+
+  /// Get real-time statistics for a meeting
+  Future<Response> _getStats(Request req) async {
+    final meetingId = req.requestedUri.queryParameters['meetingId'];
+
+    if (meetingId == null) {
+      return _jsonResponse({'error': 'Missing meetingId'}, status: 400);
+    }
+
+    try {
+      // Get meeting info
+      final meeting = await _meetings.get(meetingId);
+      if (meeting == null) {
+        return _jsonResponse({'error': 'Meeting not found'}, status: 404);
+      }
+
+      // Get all passes (joined devices) for this meeting
+      final passes = await _meetingPasses.forMeeting(meetingId);
+      final joinedDevices = passes.where((p) => !p.revoked).length;
+
+      // Get all votings for this meeting
+      final votings = await _votings.forMeeting(meetingId);
+
+      // Build voting stats
+      final votingStats = <Map<String, dynamic>>[];
+      int totalVotes = 0;
+
+      for (final voting in votings) {
+        final tickets = await _tickets.forSession(voting.id);
+        final votes = await _votes.forSession(voting.id);
+        
+        // Count unique voters (used tickets)
+        final usedTickets = tickets.where((t) => t.isUsed).length;
+        final voteCount = votes.length;
+        totalVotes += voteCount;
+
+        votingStats.add({
+          'id': voting.id,
+          'title': voting.title,
+          'status': voting.status.name,
+          'type': voting.type.name,
+          'ticketsIssued': tickets.length,
+          'votesSubmitted': voteCount,
+          'uniqueVoters': usedTickets,
+          'endsAt': voting.endsAt?.toIso8601String(),
+          'canVote': voting.canVote,
+        });
+      }
+
+      return _jsonResponse({
+        'meetingId': meetingId,
+        'meetingTitle': meeting.title,
+        'joinCode': meeting.joinCode,
+        'isActive': meeting.isActive,
+        'joinedDevices': joinedDevices,
+        'totalVotings': votings.length,
+        'totalVotes': totalVotes,
+        'votings': votingStats,
+        'timestamp': DateTime.now().toIso8601String(),
+      });
+    } catch (e) {
+      return _jsonResponse({
+        'error': 'Failed to get stats: $e',
+      }, status: 500);
+    }
   }
 }

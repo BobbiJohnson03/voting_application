@@ -59,10 +59,8 @@ class _SessionsSelectionPageState extends State<SessionsSelectionPage> {
     super.initState();
     _sessions = List.from(widget.initialSessions);
 
-    // If this is manual entry or we have a remote server, fetch sessions
-    if (widget.serverUrl != null) {
-      _fetchSessions();
-    }
+    // Always fetch sessions from server to get latest list
+    _fetchSessions();
   }
 
   Future<void> _fetchSessions() async {
@@ -71,24 +69,19 @@ class _SessionsSelectionPageState extends State<SessionsSelectionPage> {
     setState(() => _loading = true);
 
     try {
-      // Fetch manifest/sessions list from server
-      // You implemented a generic GET on ApiNetwork.
-      final response = await widget.apiNetwork.get('/manifest');
+      // Fetch sessions list from server using meetingId
+      final response = await widget.apiNetwork.get(
+        '/sessions?meetingId=${widget.meetingId}',
+      );
 
       if (response['success'] == true && response['sessions'] != null) {
         final sessions = List<Map<String, dynamic>>.from(
           response['sessions'] as List,
         );
 
-        // Filter sessions: show open, closed, and score (exclude only archived)
-        final visibleSessions = sessions.where((session) {
-          final status = session['status'] as String?;
-          return status != 'archived';
-        }).toList();
-
         if (mounted) {
           setState(() {
-            _sessions = visibleSessions;
+            _sessions = sessions;
             _loading = false;
           });
         }

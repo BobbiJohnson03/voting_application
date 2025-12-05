@@ -204,4 +204,49 @@ class ServerService {
       return null;
     }
   }
+
+  /// Get real-time statistics for a meeting
+  Future<Map<String, dynamic>> getStats(String meetingId) async {
+    // Get all passes (joined devices) for this meeting
+    final passes = await _meetingPasses.forMeeting(meetingId);
+    final joinedDevices = passes.where((p) => !p.revoked).length;
+
+    // Get all votings for this meeting
+    final votings = await _votings.forMeeting(meetingId);
+
+    // Build voting stats
+    final votingStats = <Map<String, dynamic>>[];
+    int totalVotes = 0;
+
+    for (final voting in votings) {
+      final tickets = await _tickets.forSession(voting.id);
+      final votes = await _votes.forSession(voting.id);
+      
+      // Count unique voters (used tickets)
+      final usedTickets = tickets.where((t) => t.isUsed).length;
+      final voteCount = votes.length;
+      totalVotes += voteCount;
+
+      votingStats.add({
+        'id': voting.id,
+        'title': voting.title,
+        'status': voting.status.name,
+        'type': voting.type.name,
+        'ticketsIssued': tickets.length,
+        'votesSubmitted': voteCount,
+        'uniqueVoters': usedTickets,
+        'endsAt': voting.endsAt?.toIso8601String(),
+        'canVote': voting.canVote,
+      });
+    }
+
+    return {
+      'meetingId': meetingId,
+      'joinedDevices': joinedDevices,
+      'totalVotings': votings.length,
+      'totalVotes': totalVotes,
+      'votings': votingStats,
+      'timestamp': DateTime.now().toIso8601String(),
+    };
+  }
 }

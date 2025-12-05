@@ -6,6 +6,7 @@ import '../../../core/network/api_network.dart';
 import '../../../core/services/app_state_service.dart';
 import '../../../core/services/device_fingerprint.dart';
 import '../../voting/session_selection_page.dart';
+import 'landing_page.dart';
 
 class QrScannerPage extends StatefulWidget {
   final ApiNetwork apiNetwork;
@@ -148,6 +149,17 @@ class _QrScannerPageState extends State<QrScannerPage> {
             ?.cast<Map<String, dynamic>>() ??
         [];
 
+    final meetingTitle =
+        joinResponse['meeting']?['title'] as String? ?? 'Meeting';
+
+    // Save session for persistence across page refreshes
+    await LandingPage.saveSession(
+      meetingId: meetingId,
+      meetingPassId: meetingPassId,
+      meetingTitle: meetingTitle,
+      serverUrl: serverUrl,
+    );
+
     // Stop scanner
     await _scannerController?.stop();
 
@@ -160,9 +172,9 @@ class _QrScannerPageState extends State<QrScannerPage> {
             apiNetwork: apiNetwork,
             meetingId: meetingId,
             meetingPassId: meetingPassId,
-            meetingTitle:
-                joinResponse['meeting']?['title'] as String? ?? 'Meeting',
+            meetingTitle: meetingTitle,
             initialSessions: activeSessions,
+            serverUrl: serverUrl,
           ),
         ),
       );
@@ -387,6 +399,17 @@ class _QrScannerPageState extends State<QrScannerPage> {
               ?.cast<Map<String, dynamic>>() ??
           [];
 
+      final meetingTitle =
+          joinResponse['meeting']?['title'] as String? ?? 'Meeting';
+
+      // Save session for persistence across page refreshes
+      await LandingPage.saveSession(
+        meetingId: meetingId,
+        meetingPassId: meetingPassId,
+        meetingTitle: meetingTitle,
+        serverUrl: serverUrl,
+      );
+
       if (mounted) {
         Navigator.pushReplacement(
           context,
@@ -395,9 +418,9 @@ class _QrScannerPageState extends State<QrScannerPage> {
               apiNetwork: apiNetwork,
               meetingId: meetingId,
               meetingPassId: meetingPassId,
-              meetingTitle:
-                  joinResponse['meeting']?['title'] as String? ?? 'Meeting',
+              meetingTitle: meetingTitle,
               initialSessions: activeSessions,
+              serverUrl: serverUrl,
             ),
           ),
         );

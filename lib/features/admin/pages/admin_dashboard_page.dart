@@ -8,6 +8,7 @@ import '../../../core/services/server_service.dart';
 import '../../../core/network/api_network.dart';
 import '../../../data/models/meeting.dart';
 import 'sessions_list_page.dart';
+import '../widgets/live_stats_panel.dart';
 
 class AdminPage extends StatefulWidget {
   final ApiNetwork apiNetwork;
@@ -476,6 +477,15 @@ class _AdminPageState extends State<AdminPage> with WidgetsBindingObserver {
                 ),
               ),
             ),
+            const SizedBox(height: 20),
+
+            // Live Statistics Panel
+            if (_serverRunning && _activeMeeting != null)
+              LiveStatsPanel(
+                serverService: _serverService,
+                meetingId: _activeMeeting!.id,
+              ),
+
             const SizedBox(height: 20),
 
             // QR Code Section
