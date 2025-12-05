@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../models/voting.dart';
-import '../models/meeting.dart';
-import '../models/question.dart';
+import '../../data/models/voting.dart';
+import '../../data/models/meeting.dart';
+import '../../data/models/question.dart';
 
 /// PrintService - temporarily disabled due to Android SDK compatibility issues
 /// The 'printing' package requires Android SDK attributes not available in current config.

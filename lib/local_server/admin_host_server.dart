@@ -14,14 +14,14 @@ import 'logic_admin.dart';
 import 'static_assets_handler.dart';
 import 'rate_limiter.dart';
 
-import '../repositories/meeting_repository.dart';
-import '../repositories/voting_repository.dart';
-import '../repositories/ticket_repository.dart';
-import '../repositories/vote_repository.dart';
-import '../repositories/question_repository.dart';
-import '../repositories/meeting_pass_repository.dart';
-import '../repositories/signing_key_repository.dart';
-import '../repositories/audit_log_repository.dart';
+import '../data/repositories/meeting_repository.dart';
+import '../data/repositories/voting_repository.dart';
+import '../data/repositories/ticket_repository.dart';
+import '../data/repositories/vote_repository.dart';
+import '../data/repositories/question_repository.dart';
+import '../data/repositories/meeting_pass_repository.dart';
+import '../data/repositories/signing_key_repository.dart';
+import '../data/repositories/audit_log_repository.dart';
 import 'package:flutter/foundation.dart';
 
 class AdminHostServer {

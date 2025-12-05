@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:vote_app_thesis/network/api_network.dart';
-import 'package:vote_app_thesis/services/export_service.dart';
-// import 'package:vote_app_thesis/services/print_service.dart';  // Temporarily disabled
-import 'package:vote_app_thesis/services/server_service.dart';
-import 'package:vote_app_thesis/models/voting.dart';
-import 'package:vote_app_thesis/models/meeting.dart';
-import 'package:vote_app_thesis/models/question.dart';
-import 'package:vote_app_thesis/models/enums.dart';
+import '../../../core/network/api_network.dart';
+import '../../../core/services/export_service.dart';
+// import '../../../core/services/print_service.dart';  // Temporarily disabled
+import '../../../core/services/server_service.dart';
+import '../../../data/models/voting.dart';
+import '../../../data/models/meeting.dart';
+import '../../../data/models/question.dart';
+import '../../../data/models/enums.dart';
 
 class ResultsPage extends StatefulWidget {
   final ApiNetwork apiNetwork;

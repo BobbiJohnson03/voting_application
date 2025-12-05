@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:vote_app_thesis/network/api_network.dart';
-import 'package:vote_app_thesis/services/server_service.dart';
-import 'package:vote_app_thesis/models/voting.dart';
-import 'package:vote_app_thesis/models/enums.dart';
-import 'package:vote_app_thesis/models/meeting.dart';
+import '../../../core/network/api_network.dart';
+import '../../../core/services/server_service.dart';
+import '../../../data/models/voting.dart';
+import '../../../data/models/enums.dart';
+import '../../../data/models/meeting.dart';
 import 'create_session_page.dart';
-import 'results_page.dart';
+import 'session_results_page.dart';
 
 class SessionsListPage extends StatefulWidget {
   final String meetingId;

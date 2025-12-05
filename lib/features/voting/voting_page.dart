@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:vote_app_thesis/network/api_network.dart';
-import 'package:vote_app_thesis/services/device_fingerprint.dart';
+import '../../core/network/api_network.dart';
+import '../../core/services/device_fingerprint.dart';
 
 class VotingPage extends StatefulWidget {
   final ApiNetwork apiNetwork;

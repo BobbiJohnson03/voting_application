@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:vote_app_thesis/network/api_network.dart';
-import 'package:vote_app_thesis/services/device_fingerprint.dart';
+import '../../core/network/api_network.dart';
+import '../../core/services/device_fingerprint.dart';
 import 'voting_page.dart';
-import 'results_page.dart';
+import '../admin/pages/session_results_page.dart';
 
 class SessionsSelectionPage extends StatefulWidget {
   final ApiNetwork apiNetwork;

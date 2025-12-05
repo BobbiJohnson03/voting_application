@@ -1,14 +1,14 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
-import '../local_server/admin_host_server.dart';
-import '../repositories/meeting_repository.dart';
-import '../repositories/voting_repository.dart';
-import '../repositories/ticket_repository.dart';
-import '../repositories/vote_repository.dart';
-import '../repositories/question_repository.dart';
-import '../repositories/meeting_pass_repository.dart';
-import '../repositories/signing_key_repository.dart';
-import '../repositories/audit_log_repository.dart';
+import '../../local_server/admin_host_server.dart';
+import '../../data/repositories/meeting_repository.dart';
+import '../../data/repositories/voting_repository.dart';
+import '../../data/repositories/ticket_repository.dart';
+import '../../data/repositories/vote_repository.dart';
+import '../../data/repositories/question_repository.dart';
+import '../../data/repositories/meeting_pass_repository.dart';
+import '../../data/repositories/signing_key_repository.dart';
+import '../../data/repositories/audit_log_repository.dart';
 
 /// Manages the local voting server lifecycle
 /// Server auto-starts when service is initialized (admin mode)
@@ -165,7 +165,7 @@ class ServerService {
       // 1) 192.168.0.0/16, 2) 10.0.0.0/8, 3) 172.16.0.0/12
       String? candidate;
 
-      bool _isPrivate172(String ip) {
+      bool isPrivate172(String ip) {
         final parts = ip.split('.');
         if (parts.length != 4) return false;
         final first = int.tryParse(parts[0]) ?? -1;
@@ -175,12 +175,13 @@ class ServerService {
 
       for (final interface in interfaces) {
         for (final addr in interface.addresses) {
-          if (addr.type != InternetAddressType.IPv4 || addr.isLoopback)
+          if (addr.type != InternetAddressType.IPv4 || addr.isLoopback) {
             continue;
+          }
           final ip = addr.address;
           if (ip.startsWith('192.168.')) return ip;
           candidate ??= ip.startsWith('10.') ? ip : candidate;
-          if (candidate == null && _isPrivate172(ip)) candidate = ip;
+          if (candidate == null && isPrivate172(ip)) candidate = ip;
         }
       }
 

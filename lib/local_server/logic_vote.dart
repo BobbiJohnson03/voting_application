@@ -1,15 +1,15 @@
 import 'package:shelf/shelf.dart';
 import 'package:uuid/uuid.dart';
-import '../repositories/voting_repository.dart';
-import '../repositories/ticket_repository.dart';
-import '../repositories/vote_repository.dart';
-import '../repositories/question_repository.dart';
-import '../repositories/signing_key_repository.dart';
-import '../repositories/audit_log_repository.dart';
-import '../models/secure_vote.dart';
-import '../models/question.dart';
-import '../models/audit_log.dart';
-import '../models/enums.dart';
+import '../data/repositories/voting_repository.dart';
+import '../data/repositories/ticket_repository.dart';
+import '../data/repositories/vote_repository.dart';
+import '../data/repositories/question_repository.dart';
+import '../data/repositories/signing_key_repository.dart';
+import '../data/repositories/audit_log_repository.dart';
+import '../data/models/secure_vote.dart';
+import '../data/models/question.dart';
+import '../data/models/audit_log.dart';
+import '../data/models/enums.dart';
 import 'broadcast_manager.dart';
 import 'logic_helpers.dart';
 

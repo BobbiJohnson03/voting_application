@@ -1,4 +1,4 @@
-import "package:vote_app_thesis/models/enums.dart";
+import 'enums.dart';
 import 'package:hive/hive.dart';
 part 'voting.g.dart';
 

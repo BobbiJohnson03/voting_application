@@ -1,6 +1,6 @@
 import 'package:hive/hive.dart';
 import '../models/question.dart';
-import '_boxes.dart';
+import '../_boxes.dart';
 import '../models/voting.dart';
 
 class QuestionRepository {

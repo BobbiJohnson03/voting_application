@@ -1,6 +1,6 @@
 import 'package:hive/hive.dart';
 import '../models/meeting.dart';
-import '_boxes.dart';
+import '../_boxes.dart';
 
 class MeetingRepository {
   Box<Meeting>? _box;

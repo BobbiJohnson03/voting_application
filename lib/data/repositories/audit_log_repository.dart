@@ -1,4 +1,4 @@
-import '_boxes.dart';
+import '../_boxes.dart';
 import '../models/audit_log.dart';
 import 'package:hive/hive.dart';
 

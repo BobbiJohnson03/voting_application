@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import '../network/api_network.dart';
-import 'dart:convert';
+import '../../core/network/api_network.dart';
 
 class ClientJoinPage extends StatelessWidget {
   final ApiNetwork apiNetwork;

@@ -1,5 +1,5 @@
 import '../models/result.dart';
-import '_boxes.dart';
+import '../_boxes.dart';
 import 'package:hive/hive.dart';
 
 class ResultRepository {

@@ -1,6 +1,6 @@
 import 'dart:io';
-import 'package:vote_app_thesis/services/device_fingerprint.dart';
-import 'package:vote_app_thesis/network/api_network.dart';
+import 'device_fingerprint.dart';
+import '../network/api_network.dart';
 
 /// Global app state service
 /// Manages device fingerprint, server URL, and API network instance

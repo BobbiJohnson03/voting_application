@@ -1,4 +1,4 @@
-import '_boxes.dart';
+import '../_boxes.dart';
 import 'package:hive/hive.dart';
 import '../models/meeting_pass.dart';
 

@@ -1,17 +1,17 @@
 import 'package:shelf/shelf.dart';
 import 'package:uuid/uuid.dart';
 
-import '../repositories/meeting_repository.dart';
-import '../repositories/voting_repository.dart';
-import '../repositories/ticket_repository.dart';
-import '../repositories/meeting_pass_repository.dart';
-import '../repositories/audit_log_repository.dart';
-import '../models/meeting_pass.dart';
-import '../models/audit_log.dart';
-import '../models/enums.dart';
+import '../data/repositories/meeting_repository.dart';
+import '../data/repositories/voting_repository.dart';
+import '../data/repositories/ticket_repository.dart';
+import '../data/repositories/meeting_pass_repository.dart';
+import '../data/repositories/audit_log_repository.dart';
+import '../data/models/meeting_pass.dart';
+import '../data/models/audit_log.dart';
+import '../data/models/enums.dart';
 import 'broadcast_manager.dart';
 import 'logic_helpers.dart';
-import '../models/voting.dart';
+import '../data/models/voting.dart';
 
 class LogicJoinTicket {
   final MeetingRepository meetings;

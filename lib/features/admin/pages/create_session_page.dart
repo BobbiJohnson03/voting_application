@@ -1,12 +1,12 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:vote_app_thesis/services/server_service.dart';
-import 'package:vote_app_thesis/models/voting.dart';
-import 'package:vote_app_thesis/models/question.dart';
-import 'package:vote_app_thesis/models/option.dart';
-import 'package:vote_app_thesis/models/signing_key.dart';
-import 'package:vote_app_thesis/models/enums.dart';
+import '../../../core/services/server_service.dart';
+import '../../../data/models/voting.dart';
+import '../../../data/models/question.dart';
+import '../../../data/models/option.dart';
+import '../../../data/models/signing_key.dart';
+import '../../../data/models/enums.dart';
 import 'package:uuid/uuid.dart';
 
 class CreateSessionPage extends StatefulWidget {

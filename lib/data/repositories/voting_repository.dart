@@ -1,7 +1,7 @@
 // lib/repositories/voting_repository.dart
 import 'package:hive/hive.dart';
 import '../models/voting.dart';
-import '_boxes.dart';
+import '../_boxes.dart';
 
 class VotingRepository {
   Box<Voting>? _box;

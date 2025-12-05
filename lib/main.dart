@@ -3,6 +3,30 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:path_provider/path_provider.dart' as pp;
 
+// Models and adapters
+import 'data/models/enums.dart';
+import 'data/models/meeting.dart';
+import 'data/models/option.dart';
+import 'data/models/question.dart';
+import 'data/models/voting.dart';
+import 'data/models/signing_key.dart';
+import 'data/models/ticket.dart';
+import 'data/models/secure_vote.dart';
+import 'data/models/result.dart';
+import 'data/models/meeting_pass.dart';
+import 'data/models/audit_log.dart';
+
+// Services
+import 'core/services/app_state_service.dart';
+import 'core/network/api_network.dart';
+
+// Pages
+import 'features/app/pages/landing_page.dart';
+import 'features/admin/pages/admin_dashboard_page.dart';
+import 'features/admin/pages/session_results_page.dart';
+import 'features/app/pages/qr_scanner_page.dart';
+import 'features/voting/session_selection_page.dart';
+
 Future<void> _initHive() async {
   if (kIsWeb) {
     await Hive.initFlutter();

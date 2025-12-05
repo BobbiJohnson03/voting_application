@@ -1,6 +1,6 @@
 import 'package:shelf/shelf.dart';
-import '../repositories/voting_repository.dart';
-import '../repositories/question_repository.dart';
+import '../data/repositories/voting_repository.dart';
+import '../data/repositories/question_repository.dart';
 import 'logic_helpers.dart';
 
 class LogicManifest {

@@ -1,5 +1,5 @@
-import "package:vote_app_thesis/models/option.dart";
-import "package:vote_app_thesis/models/enums.dart";
+import 'option.dart';
+import 'enums.dart';
 import 'package:hive/hive.dart';
 part 'question.g.dart';
 

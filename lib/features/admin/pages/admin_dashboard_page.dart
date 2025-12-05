@@ -1,15 +1,12 @@
-import 'dart:convert';
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:flutter/services.dart';
 import 'package:uuid/uuid.dart';
 
-import '../services/server_service.dart';
-import '../network/api_network.dart';
-import '../models/meeting.dart';
-import 'user_management_page.dart';
+import '../../../core/services/server_service.dart';
+import '../../../core/network/api_network.dart';
+import '../../../data/models/meeting.dart';
 import 'sessions_list_page.dart';
 
 class AdminPage extends StatefulWidget {

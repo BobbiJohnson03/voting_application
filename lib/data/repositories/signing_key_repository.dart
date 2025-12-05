@@ -1,4 +1,4 @@
-import '_boxes.dart';
+import '../_boxes.dart';
 import '../models/signing_key.dart';
 import 'package:hive/hive.dart';
 

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:vote_app_thesis/network/api_network.dart';
-import 'package:vote_app_thesis/services/app_state_service.dart';
-import 'package:vote_app_thesis/services/device_fingerprint.dart';
-import 'admin_page.dart';
+import '../../../core/network/api_network.dart';
+import '../../../core/services/app_state_service.dart';
+import '../../../core/services/device_fingerprint.dart';
+import '../../admin/pages/admin_dashboard_page.dart';
 import 'qr_scanner_page.dart';
-import 'sessions_selection_page.dart';
+import '../../voting/session_selection_page.dart';
 
 class LandingPage extends StatefulWidget {
   final ApiNetwork apiNetwork;

@@ -1,6 +1,6 @@
 import 'package:hive/hive.dart';
 import '../models/ticket.dart';
-import '_boxes.dart';
+import '../_boxes.dart';
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
 import 'dart:math';

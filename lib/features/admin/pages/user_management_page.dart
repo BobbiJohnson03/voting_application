@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:vote_app_thesis/models/user.dart';
-import 'package:vote_app_thesis/models/enums.dart';
-import 'package:vote_app_thesis/services/app_state_service.dart';
-import 'package:vote_app_thesis/services/server_service.dart';
-import 'package:vote_app_thesis/widgets/user_list_item.dart';
+import '../../../data/models/user.dart';
+import '../../../data/models/enums.dart';
+import '../widgets/user_list_item.dart';
 
 class UserManagementPage extends StatefulWidget {
   const UserManagementPage({super.key});

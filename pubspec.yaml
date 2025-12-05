@@ -72,11 +72,9 @@ flutter:
   uses-material-design: true
 
   # ============ ASSETS ============
+  # Web PWA files for hosting from Android APK
+  # Each subfolder must be listed separately!
   assets:
-    - assets/images/
-    - assets/icons/
-    # Web build files for PWA hosting on mobile
-    # Copy build/web/* to assets/web/ before building APK
     - assets/web/
     - assets/web/assets/
     - assets/web/assets/assets/
@@ -85,6 +83,6 @@ flutter:
     - assets/web/assets/packages/cupertino_icons/
     - assets/web/assets/packages/cupertino_icons/assets/
     - assets/web/assets/shaders/
-    - assets/web/icons/
     - assets/web/canvaskit/
     - assets/web/canvaskit/chromium/
+    - assets/web/icons/

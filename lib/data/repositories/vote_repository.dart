@@ -1,6 +1,6 @@
 import 'package:hive/hive.dart';
 import '../models/secure_vote.dart'; // ✅ Changed from vote.dart
-import '_boxes.dart';
+import '../_boxes.dart';
 
 class VoteRepository {
   Box<SecureVote>? _box;

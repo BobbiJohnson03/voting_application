@@ -22,7 +22,7 @@ class JWTSecurity {
       'exp':
           DateTime.now().add(Duration(hours: 2)).millisecondsSinceEpoch ~/
           1000, // 2 hour expiry
-    }, issuer: 'vote_app_thesis');
+    }, issuer: 'voting_application');
 
     return jwt.sign(SecretKey(signingKey.secret));
   }

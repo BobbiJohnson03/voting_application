@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:vote_app_thesis/models/user.dart';
-import 'package:vote_app_thesis/models/enums.dart';
+import '../../../data/models/user.dart';
+import '../../../data/models/enums.dart';
 
 class UserListItem extends StatelessWidget {
   final HiveUser user;

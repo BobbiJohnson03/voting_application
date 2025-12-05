@@ -1,5 +1,5 @@
 import 'package:hive/hive.dart';
-import 'package:vote_app_thesis/models/enums.dart';
+import 'enums.dart';
 part 'user.g.dart';
 
 @HiveType(typeId: 15)

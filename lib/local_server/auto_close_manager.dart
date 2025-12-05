@@ -1,6 +1,6 @@
 import 'dart:async';
-import '../repositories/meeting_repository.dart';
-import '../repositories/voting_repository.dart';
+import '../data/repositories/meeting_repository.dart';
+import '../data/repositories/voting_repository.dart';
 import 'broadcast_manager.dart';
 
 class AutoCloseManager {
