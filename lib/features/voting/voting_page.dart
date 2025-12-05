@@ -24,7 +24,7 @@ class VotingPage extends StatefulWidget {
 
 class _VotingPageState extends State<VotingPage> {
   Map<String, dynamic>? _manifest;
-  Map<String, String> _selectedOptions = {}; // questionId -> optionId
+  Map<String, Set<String>> _selectedOptions = {}; // questionId -> Set of optionIds
   bool _loading = true;
   bool _submitting = false;
   String? _error;
@@ -74,14 +74,24 @@ class _VotingPageState extends State<VotingPage> {
       return;
     }
 
-    // Validate all questions are answered
+    // Validate all questions are answered with correct number of selections
     for (var question in questions) {
       final questionId = question['id'] as String?;
       if (questionId == null) continue;
 
-      if (!_selectedOptions.containsKey(questionId)) {
+      final maxSelections = question['maxSelections'] as int? ?? 1;
+      final selections = _selectedOptions[questionId] ?? {};
+
+      if (selections.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Please answer all questions')),
+        );
+        return;
+      }
+
+      if (selections.length > maxSelections) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('You can select at most $maxSelections options for each question')),
         );
         return;
       }
@@ -99,14 +109,14 @@ class _VotingPageState extends State<VotingPage> {
         final questionId = question['id'] as String?;
         if (questionId == null) continue;
 
-        final selectedOptionId = _selectedOptions[questionId];
-        if (selectedOptionId == null) continue;
+        final selectedOptionIds = _selectedOptions[questionId]?.toList() ?? [];
+        if (selectedOptionIds.isEmpty) continue;
 
         await widget.apiNetwork.submitVote(
           ticketId: widget.ticketId,
           sessionId: widget.sessionId,
           questionId: questionId,
-          selectedOptions: [selectedOptionId],
+          selectedOptions: selectedOptionIds,
           deviceFingerprint: fingerprint,
         );
       }
@@ -235,6 +245,16 @@ class _VotingPageState extends State<VotingPage> {
       final questionId = question['id'] as String?;
       final questionText = question['text'] as String? ?? 'Question';
       final options = question['options'] as List? ?? [];
+      final maxSelections = question['maxSelections'] as int? ?? 1;
+
+      // Initialize selections set if not exists
+      if (questionId != null && !_selectedOptions.containsKey(questionId)) {
+        _selectedOptions[questionId] = {};
+      }
+
+      final currentSelections = questionId != null 
+          ? (_selectedOptions[questionId] ?? {}) 
+          : <String>{};
 
       return Card(
         margin: const EdgeInsets.only(bottom: 16),
@@ -252,30 +272,81 @@ class _VotingPageState extends State<VotingPage> {
               ),
               const SizedBox(height: 8),
               Text(questionText, style: const TextStyle(fontSize: 14)),
-              const SizedBox(height: 16),
-              ...options.map((option) {
-                final optionId = option['id'] as String?;
-                final optionText = option['text'] as String? ?? 'Option';
-                final isSelected =
-                    questionId != null &&
-                    _selectedOptions[questionId] == optionId;
+              const SizedBox(height: 4),
+              // Show selection hint
+              Text(
+                maxSelections == 1 
+                    ? 'Select one option' 
+                    : 'Select up to $maxSelections options (${currentSelections.length}/$maxSelections selected)',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: currentSelections.length > maxSelections 
+                      ? Colors.red 
+                      : Colors.grey[600],
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
+              const SizedBox(height: 12),
+              
+              // Use Radio for single selection, Checkbox for multiple
+              if (maxSelections == 1)
+                ...options.map((option) {
+                  final optionId = option['id'] as String?;
+                  final optionText = option['text'] as String? ?? 'Option';
+                  final isSelected = currentSelections.contains(optionId);
 
-                return RadioListTile<String>(
-                  title: Text(optionText),
-                  value: optionId ?? '',
-                  groupValue: questionId != null
-                      ? _selectedOptions[questionId]
-                      : null,
-                  onChanged: questionId != null
-                      ? (value) {
-                          setState(() {
-                            _selectedOptions[questionId] = value ?? '';
-                          });
-                        }
-                      : null,
-                  selected: isSelected,
-                );
-              }),
+                  return RadioListTile<String>(
+                    title: Text(optionText),
+                    value: optionId ?? '',
+                    groupValue: currentSelections.isNotEmpty 
+                        ? currentSelections.first 
+                        : null,
+                    onChanged: questionId != null
+                        ? (value) {
+                            setState(() {
+                              _selectedOptions[questionId] = {value ?? ''};
+                            });
+                          }
+                        : null,
+                    selected: isSelected,
+                  );
+                })
+              else
+                ...options.map((option) {
+                  final optionId = option['id'] as String?;
+                  final optionText = option['text'] as String? ?? 'Option';
+                  final isSelected = currentSelections.contains(optionId);
+
+                  return CheckboxListTile(
+                    title: Text(optionText),
+                    value: isSelected,
+                    onChanged: questionId != null && optionId != null
+                        ? (checked) {
+                            setState(() {
+                              final selections = _selectedOptions[questionId] ?? {};
+                              if (checked == true) {
+                                // Check if we can add more
+                                if (selections.length < maxSelections) {
+                                  selections.add(optionId);
+                                } else {
+                                  // Show warning
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text('Maximum $maxSelections selections allowed'),
+                                      duration: const Duration(seconds: 1),
+                                    ),
+                                  );
+                                }
+                              } else {
+                                selections.remove(optionId);
+                              }
+                              _selectedOptions[questionId] = selections;
+                            });
+                          }
+                        : null,
+                    controlAffinity: ListTileControlAffinity.leading,
+                  );
+                }),
             ],
           ),
         ),

@@ -8,6 +8,8 @@ import '../../../core/services/server_service.dart';
 import '../../../core/network/api_network.dart';
 import '../../../data/models/meeting.dart';
 import 'sessions_list_page.dart';
+import 'archive_page.dart';
+import 'security_panel_page.dart';
 import '../widgets/live_stats_panel.dart';
 
 class AdminPage extends StatefulWidget {
@@ -235,6 +237,31 @@ class _AdminPageState extends State<AdminPage> with WidgetsBindingObserver {
     ).then((_) => _loadMeetings());
   }
 
+  void _navigateToArchive() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ArchivePage(
+          serverService: _serverService,
+          apiNetwork: widget.apiNetwork,
+        ),
+      ),
+    );
+  }
+
+  void _navigateToSecurityPanel() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => SecurityPanelPage(
+          serverService: _serverService,
+          apiNetwork: widget.apiNetwork,
+          meetingId: _activeMeeting?.id,
+        ),
+      ),
+    );
+  }
+
   void _showQrCode() {
     if (_serverUrl == null || _activeMeeting == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -288,6 +315,16 @@ class _AdminPageState extends State<AdminPage> with WidgetsBindingObserver {
       appBar: AppBar(
         title: const Text('Admin Panel'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.security),
+            onPressed: _navigateToSecurityPanel,
+            tooltip: 'Security Panel',
+          ),
+          IconButton(
+            icon: const Icon(Icons.archive),
+            onPressed: _navigateToArchive,
+            tooltip: 'Archive',
+          ),
           if (_serverUrl != null && _activeMeeting != null)
             IconButton(
               icon: const Icon(Icons.qr_code),

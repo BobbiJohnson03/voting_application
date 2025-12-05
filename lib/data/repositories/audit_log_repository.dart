@@ -39,4 +39,10 @@ class AuditLogRepository {
         .where((a) => a.meetingId == meetingId) // ✅ Direct field access now!
         .toList(growable: false);
   }
+
+  /// Get all audit logs
+  Future<List<AuditLog>> getAll() async {
+    final box = await _open();
+    return box.values.toList(growable: false);
+  }
 }

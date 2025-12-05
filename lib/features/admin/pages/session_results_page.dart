@@ -269,77 +269,221 @@ class _ResultsPageState extends State<ResultsPage> {
       );
     }
 
+    // Header with session info
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        // Results for each question
-        ...resultsData.entries.map((entry) {
-          final questionId = entry.key;
-          final optionTallies = entry.value as Map<String, dynamic>?;
-          if (optionTallies == null) return const SizedBox.shrink();
-
-          // Calculate total votes
-          final totalVotes = optionTallies.values.fold<int>(
-            0,
-            (sum, count) => sum + (count as int? ?? 0),
-          );
-
-          return Card(
-            margin: const EdgeInsets.only(bottom: 16),
+        // Session header
+        if (_voting != null) ...[
+          Card(
+            color: Theme.of(context).colorScheme.primaryContainer,
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'Question: $questionId',
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  Row(
+                    children: [
+                      const Icon(Icons.how_to_vote, size: 32),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          _voting!.title,
+                          style: const TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Total Votes: $totalVotes',
-                    style: const TextStyle(fontSize: 14, color: Colors.grey),
+                    'Total responses: ${_results!['totalVotes'] ?? 0}',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Theme.of(context).colorScheme.onPrimaryContainer,
+                    ),
                   ),
-                  const SizedBox(height: 16),
-                  // Results for each option
-                  ...optionTallies.entries.map((optionEntry) {
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+        ],
+
+        // Results for each question
+        ...resultsData.entries.toList().asMap().entries.map((mapEntry) {
+          final index = mapEntry.key;
+          final entry = mapEntry.value;
+          final questionId = entry.key;
+          final optionTallies = entry.value as Map<String, dynamic>?;
+          if (optionTallies == null) return const SizedBox.shrink();
+
+          // Find question by ID to get text
+          final question = _questions.where((q) => q.id == questionId).firstOrNull;
+          final questionText = question?.text ?? 'Question ${index + 1}';
+
+          // Calculate total votes for this question
+          final totalVotes = optionTallies.values.fold<int>(
+            0,
+            (sum, count) => sum + (count as int? ?? 0),
+          );
+
+          // Sort options by vote count (descending)
+          final sortedOptions = optionTallies.entries.toList()
+            ..sort((a, b) => (b.value as int).compareTo(a.value as int));
+
+          // Find max votes for scaling
+          final maxVotes = sortedOptions.isNotEmpty
+              ? sortedOptions.first.value as int
+              : 1;
+
+          return Card(
+            margin: const EdgeInsets.only(bottom: 20),
+            elevation: 2,
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Question header
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.blue,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          'Q${index + 1}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          questionText,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    '$totalVotes ${totalVotes == 1 ? 'vote' : 'votes'}',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Results bar chart
+                  ...sortedOptions.map((optionEntry) {
                     final optionId = optionEntry.key;
-                    final voteCount = optionEntry.value as int? ?? 0;
+                    final voteCount = optionEntry.value as int;
                     final percentage = totalVotes > 0
-                        ? (voteCount / totalVotes * 100).toStringAsFixed(1)
-                        : '0.0';
+                        ? (voteCount / totalVotes * 100)
+                        : 0.0;
+
+                    // Find option text
+                    final option = question?.options
+                        .where((o) => o.id == optionId)
+                        .firstOrNull;
+                    final optionText = option?.text ?? optionId;
+
+                    // Color based on ranking
+                    final isWinner = voteCount == maxVotes && voteCount > 0;
+                    final barColor = isWinner ? Colors.green : Colors.blue;
 
                     return Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
+                      padding: const EdgeInsets.only(bottom: 16),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          // Option text and votes
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Expanded(
-                                child: Text(
-                                  optionId,
-                                  style: const TextStyle(fontSize: 14),
+                                child: Row(
+                                  children: [
+                                    if (isWinner)
+                                      const Padding(
+                                        padding: EdgeInsets.only(right: 8),
+                                        child: Icon(
+                                          Icons.emoji_events,
+                                          color: Colors.amber,
+                                          size: 20,
+                                        ),
+                                      ),
+                                    Expanded(
+                                      child: Text(
+                                        optionText,
+                                        style: TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: isWinner
+                                              ? FontWeight.bold
+                                              : FontWeight.normal,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
+                              const SizedBox(width: 12),
                               Text(
-                                '$voteCount votes ($percentage%)',
-                                style: const TextStyle(
+                                '$voteCount (${percentage.toStringAsFixed(1)}%)',
+                                style: TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.bold,
+                                  color: barColor,
                                 ),
                               ),
                             ],
                           ),
-                          const SizedBox(height: 4),
-                          LinearProgressIndicator(
-                            value: totalVotes > 0 ? voteCount / totalVotes : 0,
-                            backgroundColor: Colors.grey[300],
-                            minHeight: 8,
+                          const SizedBox(height: 8),
+                          // Progress bar
+                          Stack(
+                            children: [
+                              Container(
+                                height: 24,
+                                decoration: BoxDecoration(
+                                  color: Colors.grey[200],
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                              FractionallySizedBox(
+                                widthFactor: totalVotes > 0
+                                    ? voteCount / totalVotes
+                                    : 0,
+                                child: Container(
+                                  height: 24,
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        barColor,
+                                        barColor.withValues(alpha: 0.7),
+                                      ],
+                                    ),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
