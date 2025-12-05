@@ -3,6 +3,7 @@ import '../../core/network/api_network.dart';
 import '../../core/services/device_fingerprint.dart';
 import 'voting_page.dart';
 import '../admin/pages/session_results_page.dart';
+import '../app/pages/landing_page.dart';
 
 class SessionsSelectionPage extends StatefulWidget {
   final ApiNetwork apiNetwork;
@@ -162,10 +163,62 @@ class _SessionsSelectionPageState extends State<SessionsSelectionPage> {
     );
   }
 
+  /// Leave the meeting and clear saved session
+  Future<void> _leaveMeeting() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Leave Meeting?'),
+        content: const Text(
+          'You will need to re-enter the join code to rejoin this meeting.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Leave', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      // Clear saved session
+      await LandingPage.clearSession();
+
+      // Navigate back to landing page
+      if (mounted) {
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(
+            builder: (_) => LandingPage(apiNetwork: widget.apiNetwork),
+          ),
+          (route) => false,
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(widget.meetingTitle)),
+      appBar: AppBar(
+        title: Text(widget.meetingTitle),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: _fetchSessions,
+            tooltip: 'Refresh',
+          ),
+          IconButton(
+            icon: const Icon(Icons.exit_to_app),
+            onPressed: _leaveMeeting,
+            tooltip: 'Leave Meeting',
+          ),
+        ],
+      ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _sessions.isEmpty

@@ -1,39 +1,64 @@
 import 'package:shelf/shelf.dart';
 import 'dart:convert';
 
-/// Simple in-memory rate limiter for security
-/// Prevents brute-force attacks on sensitive endpoints
+/// Rate limiter optimized for local voting with up to 35 participants
+/// Uses fingerprint-based tracking since we can't get real IPs in Shelf
 class RateLimiter {
-  // Track requests per IP address
+  // Track requests per client identifier
   final Map<String, List<DateTime>> _requestLog = {};
 
-  // Configuration
-  final int maxRequests;
+  // Configuration - optimized for 35 participants voting simultaneously
+  final int maxRequestsPerClient;
+  final int maxGlobalRequestsPerSecond;
   final Duration window;
   final Duration blockDuration;
 
-  // Blocked IPs
-  final Map<String, DateTime> _blockedIps = {};
+  // Blocked clients
+  final Map<String, DateTime> _blockedClients = {};
 
-  // Sensitive endpoints that need stricter limiting
-  static const _sensitiveEndpoints = ['/join', '/ticket', '/vote'];
+  // Global request counter (for DDoS protection)
+  final List<DateTime> _globalRequests = [];
+
+  // Max participants
+  static const int maxParticipants = 35;
 
   RateLimiter({
-    this.maxRequests = 30, // Max 30 requests per window
+    this.maxRequestsPerClient = 60, // Per client: 60 requests per minute (enough for voting flow)
+    this.maxGlobalRequestsPerSecond = 100, // Global: 100 req/s (35 users * ~3 req each)
     this.window = const Duration(minutes: 1),
-    this.blockDuration = const Duration(minutes: 5),
+    this.blockDuration = const Duration(minutes: 2), // Shorter block time
   });
 
   /// Shelf middleware for rate limiting
   Middleware get middleware {
     return (Handler innerHandler) {
       return (Request request) async {
-        final clientIp = _getClientIp(request);
+        final clientId = _getClientIdentifier(request);
         final path = request.requestedUri.path;
 
-        // Check if IP is blocked
-        if (_isBlocked(clientIp)) {
-          final unblockTime = _blockedIps[clientIp]!;
+        // Skip rate limiting for static files (PWA assets)
+        if (_isStaticFile(path)) {
+          return innerHandler(request);
+        }
+
+        // Check global rate limit first (DDoS protection)
+        if (!_checkGlobalLimit()) {
+          return Response(
+            503,
+            body: jsonEncode({
+              'error': 'Server busy. Please try again.',
+              'retryAfter': 1,
+            }),
+            headers: {
+              'Content-Type': 'application/json',
+              'Retry-After': '1',
+            },
+          );
+        }
+
+        // Check if client is blocked
+        if (_isBlocked(clientId)) {
+          final unblockTime = _blockedClients[clientId]!;
           final remaining = unblockTime.difference(DateTime.now()).inSeconds;
           return Response(
             429,
@@ -48,20 +73,15 @@ class RateLimiter {
           );
         }
 
-        // Apply stricter limits for sensitive endpoints
-        final isSensitive = _sensitiveEndpoints.any((e) => path.startsWith(e));
-        final effectiveMax = isSensitive ? (maxRequests ~/ 2) : maxRequests;
-
-        // Check rate limit
-        if (!_checkRateLimit(clientIp, effectiveMax)) {
-          // Block the IP
-          _blockedIps[clientIp] = DateTime.now().add(blockDuration);
+        // Check per-client rate limit
+        if (!_checkRateLimit(clientId, maxRequestsPerClient)) {
+          // Block the client temporarily
+          _blockedClients[clientId] = DateTime.now().add(blockDuration);
 
           return Response(
             429,
             body: jsonEncode({
-              'error':
-                  'Rate limit exceeded. You have been temporarily blocked.',
+              'error': 'Rate limit exceeded. Please slow down.',
               'retryAfter': blockDuration.inSeconds,
             }),
             headers: {
@@ -72,7 +92,8 @@ class RateLimiter {
         }
 
         // Record the request
-        _recordRequest(clientIp);
+        _recordRequest(clientId);
+        _recordGlobalRequest();
 
         // Continue to handler
         return innerHandler(request);
@@ -80,34 +101,72 @@ class RateLimiter {
     };
   }
 
-  /// Extract client IP from request
-  String _getClientIp(Request request) {
-    // Check X-Forwarded-For header (for proxied requests)
-    final forwarded = request.headers['x-forwarded-for'];
-    if (forwarded != null && forwarded.isNotEmpty) {
-      return forwarded.split(',').first.trim();
-    }
-
-    // Check X-Real-IP header
-    final realIp = request.headers['x-real-ip'];
-    if (realIp != null && realIp.isNotEmpty) {
-      return realIp;
-    }
-
-    // Fallback: use a default identifier
-    // In Shelf, we don't have direct access to socket IP in the request
-    // This is a limitation - in production, use a reverse proxy that sets headers
-    return 'unknown-client';
+  /// Check if path is a static file (don't rate limit these)
+  bool _isStaticFile(String path) {
+    return path.endsWith('.html') ||
+        path.endsWith('.js') ||
+        path.endsWith('.css') ||
+        path.endsWith('.png') ||
+        path.endsWith('.ico') ||
+        path.endsWith('.json') ||
+        path.endsWith('.wasm') ||
+        path.endsWith('.ttf') ||
+        path.endsWith('.woff') ||
+        path.endsWith('.woff2') ||
+        path == '/' ||
+        path.isEmpty;
   }
 
-  /// Check if IP is currently blocked
-  bool _isBlocked(String ip) {
-    final unblockTime = _blockedIps[ip];
+  /// Check global request rate (DDoS protection)
+  bool _checkGlobalLimit() {
+    final now = DateTime.now();
+    final oneSecondAgo = now.subtract(const Duration(seconds: 1));
+    
+    // Remove old entries
+    _globalRequests.removeWhere((time) => time.isBefore(oneSecondAgo));
+    
+    return _globalRequests.length < maxGlobalRequestsPerSecond;
+  }
+
+  /// Record global request
+  void _recordGlobalRequest() {
+    _globalRequests.add(DateTime.now());
+  }
+
+  /// Extract client identifier from request
+  /// Uses fingerprint from request body/header, or User-Agent as fallback
+  String _getClientIdentifier(Request request) {
+    // Try to get fingerprint from header (set by client)
+    final fingerprint = request.headers['x-device-fingerprint'];
+    if (fingerprint != null && fingerprint.isNotEmpty) {
+      return 'fp:$fingerprint';
+    }
+
+    // Use User-Agent as identifier (different browsers/devices have different UA)
+    final userAgent = request.headers['user-agent'] ?? '';
+    if (userAgent.isNotEmpty) {
+      // Create a simple hash of user agent to identify client
+      return 'ua:${userAgent.hashCode}';
+    }
+
+    // Fallback to remote address if available via headers
+    final forwarded = request.headers['x-forwarded-for'];
+    if (forwarded != null && forwarded.isNotEmpty) {
+      return 'ip:${forwarded.split(',').first.trim()}';
+    }
+
+    // Last resort - treat as unknown
+    return 'unknown:${DateTime.now().millisecondsSinceEpoch ~/ 60000}'; // Changes every minute
+  }
+
+  /// Check if client is currently blocked
+  bool _isBlocked(String clientId) {
+    final unblockTime = _blockedClients[clientId];
     if (unblockTime == null) return false;
 
     if (DateTime.now().isAfter(unblockTime)) {
       // Block expired, remove it
-      _blockedIps.remove(ip);
+      _blockedClients.remove(clientId);
       return false;
     }
 
@@ -130,23 +189,24 @@ class RateLimiter {
   }
 
   /// Record a request
-  void _recordRequest(String ip) {
-    _requestLog.putIfAbsent(ip, () => []);
-    _requestLog[ip]!.add(DateTime.now());
+  void _recordRequest(String clientId) {
+    _requestLog.putIfAbsent(clientId, () => []);
+    _requestLog[clientId]!.add(DateTime.now());
 
     // Cleanup old entries periodically
-    if (_requestLog[ip]!.length > maxRequests * 2) {
+    if (_requestLog[clientId]!.length > maxRequestsPerClient * 2) {
       final cutoff = DateTime.now().subtract(window);
-      _requestLog[ip]!.removeWhere((time) => time.isBefore(cutoff));
+      _requestLog[clientId]!.removeWhere((time) => time.isBefore(cutoff));
     }
   }
 
   /// Clear all rate limit data (for testing)
   void clear() {
     _requestLog.clear();
-    _blockedIps.clear();
+    _blockedClients.clear();
+    _globalRequests.clear();
   }
 
-  /// Get current blocked IPs (for monitoring)
-  Map<String, DateTime> get blockedIps => Map.unmodifiable(_blockedIps);
+  /// Get current blocked clients (for monitoring)
+  Map<String, DateTime> get blockedClients => Map.unmodifiable(_blockedClients);
 }
