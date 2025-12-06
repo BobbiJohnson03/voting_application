@@ -50,25 +50,27 @@ class _AdminPageState extends State<AdminPage> with WidgetsBindingObserver {
   }
 
   Future<void> _checkServerStatus() async {
-    setState(() {
-      _serverStarting = true;
-      _serverError = null;
-    });
-
-    try {
-      final url = await _serverService.getServerUrl();
-      setState(() {
-        _serverRunning = true;
-        _serverUrl = url;
-      });
-    } catch (e) {
+    // Sync local state with singleton's actual state
+    if (_serverService.isRunning) {
+      try {
+        final url = _serverService.getServerUrl();
+        setState(() {
+          _serverRunning = true;
+          _serverUrl = url;
+          _serverError = null;
+        });
+      } catch (e) {
+        setState(() {
+          _serverRunning = false;
+          _serverUrl = null;
+          _serverError = e.toString();
+        });
+      }
+    } else {
       setState(() {
         _serverRunning = false;
-        _serverError = e.toString();
-      });
-    } finally {
-      setState(() {
-        _serverStarting = false;
+        _serverUrl = null;
+        _serverError = null;
       });
     }
   }
@@ -98,6 +100,30 @@ class _AdminPageState extends State<AdminPage> with WidgetsBindingObserver {
   }
 
   Future<void> _stopServer() async {
+    // Show confirmation dialog
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Zatrzymanie serwera'),
+        content: const Text('Czy na pewno chcesz wyłączyć serwer?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Nie'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+            ),
+            child: const Text('Tak'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
     setState(() {
       _serverStarting = true;
     });

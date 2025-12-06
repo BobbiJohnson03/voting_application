@@ -12,7 +12,12 @@ import '../../data/repositories/audit_log_repository.dart';
 
 /// Manages the local voting server lifecycle
 /// Server auto-starts when service is initialized (admin mode)
+/// Singleton pattern ensures server state persists across navigation
 class ServerService {
+  // Singleton instance
+  static final ServerService _instance = ServerService._internal();
+  factory ServerService() => _instance;
+
   AdminHostServer? _server;
   String? _serverIp;
   int _port = 8080;
@@ -28,7 +33,7 @@ class ServerService {
   late final SigningKeyRepository _signingKeys;
   late final AuditLogRepository _auditLogs;
 
-  ServerService() {
+  ServerService._internal() {
     // Initialize repositories
     _meetings = MeetingRepository();
     _votings = VotingRepository();
